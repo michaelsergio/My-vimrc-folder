@@ -1,0 +1,149 @@
+# Snippets used by Eikos Risk Applications to accelerate SQL generation
+
+# Snippets
+# --------
+snippet sql Basic SQL Query Outline
+	BEGIN TRANSACTION 
+		${1: }
+	ROLLBACK TRANSACTION
+
+snippet sqlsp Stored Procedure Framework
+	EXECUTE net_DropIfExists '${1:net_}';
+	GO
+	CREATE PROCEDURE $1
+		${2:@} ${3:INT}
+	AS
+	/* DOCUMENTATION: {{{
+	 * ${4:TODO} 
+	 }}}*/
+	DECLARE 
+		@err INT, 
+		@errdesc VARCHAR(100);
+	SET @err = 0; 
+	SET @errdesc = 'Error in $1';
+	BEGIN TRANSACTION
+	BEGIN
+		PRINT 'In $1 {{{';
+			${5: }
+		PRINT 'In $1 }}}';
+	END;
+	IF @err = 0
+		COMMIT TRANSACTION;
+	ELSE
+	BEGIN
+		ROLLBACK TRANSACTION;
+		RAISERROR(@errdesc, 16, 1);
+	END;
+	GO
+
+	PRINT 'I LOL FORWARD'
+	GRANT EXECUTE ON $1 TO PUBLIC
+
+snippet sqlfn Function Framework
+	EXECUTE net_DropIfExists '${1:fn_}';
+	GO
+
+	CREATE FUNCTION dbo.$1
+	(
+		${2:id} ${3:INT}
+	)
+	RETURNS ${4:VARIABLETYPE}
+	AS
+	BEGIN
+	DECLARE @retval ${5:INT};
+	/* DOCUMENTATION: {{{
+	 * ${6:TODO} 
+	 }}}*/
+	${7: }
+	RETURN @retval;
+	END
+	GO
+
+	GRANT EXECUTE ON dbo.$1 TO public;
+	GO
+
+snippet sqlview View Framework
+	EXECUTE net_DropIfExists '${1:fn_}';
+	GO
+	
+	CREATE VIEW dbo.$1
+	AS
+		SELECT
+			${2: }
+	GO
+
+	GRANT SELECT ON dbo.$1 TO PUBLIC
+	GO
+
+snippet	sqltriggercheck Trigger Check Framework
+	EXECUTE net_DropIfExists 'net_NotificationCheck_<{StoredProcName}>';
+	GO
+
+	CREATE PROCEDURE net_NotificationCheck_<{StoredProcName}>
+		@eesr_id INT,
+	@parameter VARCHAR(10) = NULL,
+	@entityid INT, 
+	@eventtriggered CHAR(1) OUTPUT
+	AS
+	DECLARE @err INT;
+	SET @err = 0;
+	BEGIN TRANSACTION
+	BEGIN
+	<{}>
+	END;
+	IF @err = 0
+	COMMIT TRANSACTION;
+	ELSE
+	BEGIN
+	ROLLBACK TRANSACTION;
+	RAISERROR('Error in net_NotificationCheck_<{StoredProcName}>', 16, 1);
+	END;
+	GO
+
+	GRANT EXECUTE ON net_NotificationCheck_<{StoredProcName}> TO PUBLIC"
+
+snippet sqlcursor SQL Cursor Framework
+	DECLARE ${1:cur} CURSOR LOCAL FAST_FORWARD FOR
+		SELECT
+			${3: }
+
+	OPEN cur<{CursorName}>;
+
+	FETCH NEXT FROM $1 INTO 
+		${2:variablelist}
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		${4: }
+	FETCH NEXT FROM $1 INTO 
+		$2
+	END;
+
+	CLOSE $1;
+	DEALLOCATE $1;
+
+snippet sqltable SQL Table Framework
+	EXECUTE net_DropIfExists '${1}';
+	GO
+
+	IF NOT EXISTS(SELECT * FROM sysobjects WHERE name = '$1')
+	BEGIN
+		CREATE TABLE $1 (
+		${2:ID} INT NOT NULL IDENTITY PRIMARY KEY,
+		${3:Description} ${4:VARCHAR(20)} NULL
+		);
+	END
+	GRANT SELECT ON $1 TO PUBLIC
+
+snippet sqlcolpk SQL Primary Key Column Framework
+	${1:colname} INT NOT NULL IDENTITY PRIMARY KEY${2: }
+
+snippet sqlcolfk SQL Foreign Key Column Framework
+	 ${1:colname} INT NOT NULL FOREIGN KEY REFERENCES ${2:foreigntablename}(${3:foreigncolumnname})${4: }
+
+snippet sqlfacilityinsert Insert New Facility
+	SELECT MAX(ID) + 1 FROM Facilities WHERE ID < 99999;
+	INSERT INTO Facilities
+	(ID, Description, SysDescription, NeedVerification, Fag_Code, Faa_Code)
+	VALUES
+	(<{ID}>, <{Description}>, <{SysDescription}>, <{NeedVerification}>, <{Fag_Code}>, <{Faa_Code}>)
+	"
