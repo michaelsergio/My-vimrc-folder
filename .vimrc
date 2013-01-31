@@ -1,4 +1,5 @@
 set softtabstop=4 shiftwidth=4 expandtab
+set ruler
 map <F2> :NERDTreeToggle<CR>
 filetype plugin on
 set nu
@@ -25,5 +26,16 @@ endfunction
 
 augroup filetypedetect
 au! BufRead,BufNewFile *.rhtml		setfiletype eruby
+au! BufRead,BufNewFile *.pde		setfiletype java
 " add *.erb ??????? to       ^^^^^^^?
 augroup END
+
+let g:user_zen_expandabbr_key = '<c-e>'
+let g:use_zen_complete_tag = 1
+
+au BufNewFile,BufRead COMMIT_EDITMSG setlocal spell
+
+
+" Sudo Save when vim accidentally opened without sudo
+cmap w!! %!sudo tee > /dev/null %
+
