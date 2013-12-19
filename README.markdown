@@ -1,4 +1,4 @@
-GO USE VUNDLE BASED VERSION INSTEAD
+GO USE VUNDLE VERSION INSTEAD!
 ====================================
 
 This is currently unmaintained.
